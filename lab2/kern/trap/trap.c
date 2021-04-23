@@ -50,7 +50,7 @@ idt_init(void) {
       for(int i=0;i<256;i++){
       SETGATE(idt[i],0,GD_KTEXT,__vectors[i],DPL_KERNEL);
       }
-      //SETGATE(idt[T_SWITCH_TOK],1,KERNEL_CS,__vectors[T_SWITCH_TOK],DPL_USER);
+      SETGATE(idt[T_SWITCH_TOK],1,KERNEL_CS,__vectors[T_SWITCH_TOK],DPL_USER);
       lidt(&idt_pd);
       
       
