@@ -53,11 +53,7 @@ static const struct {
     {IO_BASE0, IO_CTRL0},
     {IO_BASE1, IO_CTRL1},
 };
-<<<<<<< HEAD
 
-=======
-//ideno 0~3
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
 #define IO_BASE(ideno)          (channels[(ideno) >> 1].base)
 #define IO_CTRL(ideno)          (channels[(ideno) >> 1].ctrl)
 

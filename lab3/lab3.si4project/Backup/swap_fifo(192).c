@@ -50,10 +50,7 @@ _fifo_map_swappable(struct mm_struct *mm, uintptr_t addr, struct Page *page, int
     assert(entry != NULL && head != NULL);
     //record the page access situlation
     /*LAB3 EXERCISE 2: YOUR CODE*/ 
-<<<<<<< HEAD
-=======
 	list_add(head, entry);
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
     //(1)link the most recent arrival page at the back of the pra_list_head qeueue.
     return 0;
 }
@@ -71,15 +68,12 @@ _fifo_swap_out_victim(struct mm_struct *mm, struct Page ** ptr_page, int in_tick
      /*LAB3 EXERCISE 2: YOUR CODE*/ 
      //(1)  unlink the  earliest arrival page in front of pra_list_head qeueue
      //(2)  assign the value of *ptr_page to the addr of this page
-<<<<<<< HEAD
-=======
      list_entry_t *le = head->prev;//用le指示需要被换出的页
      assert(head!=le);
-     struct Page *p = le2page(le, pra_page_link)//le2page宏可以根据链表元素获得对应的Page指针p  
+     struct Page *p = le2page(le, pra_page_link//le2page宏可以根据链表元素获得对应的Page指针p  
      list_del(le); //将进来最早的页面从队列中删除
      assert(p !=NULL);
      *ptr_page = p; //将进来最早的页面从队列中删除
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
      return 0;
 }
 
@@ -154,150 +148,3 @@ struct swap_manager swap_manager_fifo =
      .swap_out_victim = &_fifo_swap_out_victim,
      .check_swap      = &_fifo_check_swap,
 };
-<<<<<<< HEAD
-=======
-
-
-
-
-list_entry_t pra_list_head;
-
-static int
-_clock_init_mm(struct mm_struct *mm)
-{     
-     list_init(&pra_list_head);
-     mm->sm_priv = &pra_list_head;
-     return 0;
-}
-//此处和FIFO的初始化方法相同
-
-static int
-_clock_map_swappable(struct mm_struct *mm, uintptr_t addr, struct Page *page, int swap_in)
-{
-    //换入页的在链表中的位置并不影响，因此将其插入到链表最末端。
-    list_entry_t *head=(list_entry_t*) mm->sm_priv;
-    list_entry_t *entry=&(page->pra_page_link);
-
-    assert(entry != NULL && head != NULL);// 将新页插入到链表最后
-    list_add(head -> prev, entry);// 新插入的页dirty bit标记为0.
-    struct Page *ptr = le2page(entry, pra_page_link);
-    pte_t *pte = get_pte(mm -> pgdir, ptr -> pra_vaddr, 0);
-    *pte &= ~PTE_D;
-    return 0;
-}
-
-static int
-_clock_swap_out_victim(struct mm_struct *mm, struct Page ** ptr_page, int in_tick)
-{
-     list_entry_t *head=(list_entry_t*) mm->sm_priv;
-     assert(head != NULL);
-     assert(in_tick==0);
-
-     list_entry_t * le = head;
-     int i; // 循环三次 寻找合适的置换页
-    for (i = 0; i < 2; i++) {
-        /* 第一次循环 寻找 没被访问过的 且 没被修改过的 同时将被访问过的页的 访问位 清 0
-            第二次循环 依然是寻找 没被访问过的 且 没被修改过的 因为到了此次循环 访问位都被清 0 了 不存在被访问过的
-            只需要找没被修改过的即可 同时将被修改过的页 修改位 清 0
-            第三次循环 还是找 没被访问过 且 没被修改过的 此时 第一次循环 已经将所有访问位 清 0 了
-             第二次循环 也已经将所有修改位清 0 了 故 在第三次循环 一定有 没被访问过 也没被修改过的 页
-        */
-        while (le != head) {
-            struct Page *page = le2page(le, pra_page_link);            
-            pte_t *ptep = get_pte(mm->pgdir, page->pra_vaddr, 0);
-
-            if (!(*ptep & PTE_A) && !(*ptep & PTE_D)) { // 没被访问过 也没被修改过 
-                list_del(le);
-                *ptr_page = page;
-                return 0;
-            }
-            if (i == 0) {
-                *ptep &= 0xFFFFFFDF;
-            } else if (i == 1) {
-                *ptep &= 0xFFFFFFBF;
-            }
-            le = le->prev;
-        }
-        le = le->prev;
-    }
-     return 0;
-}
-
-仿照swap_fifo.c中的_fifo_check_swap，编写_clock_check_swap
-
-static int
-_clock_check_swap(void) {
-    cprintf("write Virt Page c in clock_check_swap\n");
-    *(unsigned char *)0x3000 = 0x0c;
-    assert(pgfault_num==4);
-    cprintf("write Virt Page a in clock_check_swap\n");
-    *(unsigned char *)0x1000 = 0x0a;
-    assert(pgfault_num==4);
-    cprintf("write Virt Page d in clock_check_swap\n");
-    *(unsigned char *)0x4000 = 0x0d;
-    assert(pgfault_num==4);
-    cprintf("write Virt Page b in clock_check_swap\n");
-    *(unsigned char *)0x2000 = 0x0b;
-    assert(pgfault_num==4);
-    cprintf("write Virt Page e in clock_check_swap\n");
-    *(unsigned char *)0x5000 = 0x0e;
-    assert(pgfault_num==5);
-    cprintf("write Virt Page b in clock_check_swap\n");
-    *(unsigned char *)0x2000 = 0x0b;
-    assert(pgfault_num==5);
-    cprintf("write Virt Page a in clock_check_swap\n");
-    *(unsigned char *)0x1000 = 0x0a;
-    assert(pgfault_num==6);
-    cprintf("write Virt Page b in clock_check_swap\n");
-    *(unsigned char *)0x2000 = 0x0b;
-    assert(pgfault_num==7);
-    cprintf("write Virt Page c in clock_check_swap\n");
-    *(unsigned char *)0x3000 = 0x0c;
-    assert(pgfault_num==8);
-    cprintf("write Virt Page d in clock_check_swap\n");
-    *(unsigned char *)0x4000 = 0x0d;
-    assert(pgfault_num==9);
-    cprintf("write Virt Page e in clock_check_swap\n");
-    *(unsigned char *)0x5000 = 0x0e;
-    assert(pgfault_num==10);
-    cprintf("write Virt Page a in clock_check_swap\n");
-    assert(*(unsigned char *)0x1000 == 0x0a);
-    *(unsigned char *)0x1000 = 0x0a;
-    assert(pgfault_num==11);
-    return 0;
-}
-
-这些也同样进行仿写：
-
-static int
-_clock_init(void)
-{
-    return 0;
-}
-
-static int
-_clock_set_unswappable(struct mm_struct *mm, uintptr_t addr)
-{
-    return 0;
-}
-
-static int
-_clock_tick_event(struct mm_struct *mm)
-{ return 0; }
-
-最后对swap_manager_clock进行初始化：
-
-struct swap_manager swap_manager_clock =
-{
-     .name            = "extend_clock swap manager",
-     .init            = &_clock_init,
-     .init_mm         = &_clock_init_mm,
-     .tick_event      = &_clock_tick_event,
-     .map_swappable   = &_clock_map_swappable,
-     .set_unswappable = &_clock_set_unswappable,
-     .swap_out_victim = &_clock_swap_out_victim,
-     .check_swap      = &_clock_check_swap,
-};
-
-
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235

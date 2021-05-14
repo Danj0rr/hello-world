@@ -372,21 +372,6 @@ get_pte(pde_t *pgdir, uintptr_t la, bool create) {
     }
     return NULL;          // (8) return page table entry
 #endif
-<<<<<<< HEAD
-    pde_t *pdep = &pgdir[PDX(la)];
-    if (!(*pdep & PTE_P)) {
-        struct Page *page;
-        if (!create || (page = alloc_page()) == NULL) {
-            return NULL;
-        }
-        set_page_ref(page, 1);
-        uintptr_t pa = page2pa(page);
-        memset(KADDR(pa), 0, PGSIZE);
-        *pdep = pa | PTE_U | PTE_W | PTE_P;
-    }
-    return &((pte_t *)KADDR(PDE_ADDR(*pdep)))[PTX(la)];
-=======
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
 }
 
 //get_page - get related Page struct for linear address la using PDT pgdir
@@ -432,17 +417,6 @@ page_remove_pte(pde_t *pgdir, uintptr_t la, pte_t *ptep) {
                                   //(6) flush tlb
     }
 #endif
-<<<<<<< HEAD
-    if (*ptep & PTE_P) {
-        struct Page *page = pte2page(*ptep);
-        if (page_ref_dec(page) == 0) {
-            free_page(page);
-        }
-        *ptep = 0;
-        tlb_invalidate(pgdir, la);
-    }
-=======
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
 }
 
 //page_remove - free an Page which is related linear address la and has an validated pte
@@ -625,10 +599,6 @@ perm2str(int perm) {
 //  left_store:  the pointer of the high side of table's next range
 //  right_store: the pointer of the low side of table's next range
 // return value: 0 - not a invalid item range, perm - a valid item range with perm permission 
-<<<<<<< HEAD
-=======
-//在PDT 或 PT 中找到一块连续的线性地址，在left与right之间
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
 static int
 get_pgtable_items(size_t left, size_t right, size_t start, uintptr_t *table, size_t *left_store, size_t *right_store) {
     if (start >= right) {
@@ -674,13 +644,8 @@ void *
 kmalloc(size_t n) {
     void * ptr=NULL;
     struct Page *base=NULL;
-<<<<<<< HEAD
-    assert(n > 0 && n < 1024*0124);//最多84页
+    assert(n > 0 && n < 1024*0124);
     int num_pages=(n+PGSIZE-1)/PGSIZE;
-=======
-    assert(n > 0 && n < 1024*0124);//至多分配123页的连续物理内存（492M）
-    int num_pages=(n+PGSIZE-1)/PGSIZE;// +(PGSIZE-1)的目的在于让num向上取整 相当于n/PGSIZE + 1
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
     base = alloc_pages(num_pages);
     assert(base != NULL);
     ptr=page2kva(base);

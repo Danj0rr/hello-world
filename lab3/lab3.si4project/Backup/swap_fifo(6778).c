@@ -50,10 +50,7 @@ _fifo_map_swappable(struct mm_struct *mm, uintptr_t addr, struct Page *page, int
     assert(entry != NULL && head != NULL);
     //record the page access situlation
     /*LAB3 EXERCISE 2: YOUR CODE*/ 
-<<<<<<< HEAD
-=======
 	list_add(head, entry);
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
     //(1)link the most recent arrival page at the back of the pra_list_head qeueue.
     return 0;
 }
@@ -71,15 +68,12 @@ _fifo_swap_out_victim(struct mm_struct *mm, struct Page ** ptr_page, int in_tick
      /*LAB3 EXERCISE 2: YOUR CODE*/ 
      //(1)  unlink the  earliest arrival page in front of pra_list_head qeueue
      //(2)  assign the value of *ptr_page to the addr of this page
-<<<<<<< HEAD
-=======
      list_entry_t *le = head->prev;//用le指示需要被换出的页
      assert(head!=le);
      struct Page *p = le2page(le, pra_page_link)//le2page宏可以根据链表元素获得对应的Page指针p  
      list_del(le); //将进来最早的页面从队列中删除
      assert(p !=NULL);
      *ptr_page = p; //将进来最早的页面从队列中删除
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
      return 0;
 }
 
@@ -154,8 +148,6 @@ struct swap_manager swap_manager_fifo =
      .swap_out_victim = &_fifo_swap_out_victim,
      .check_swap      = &_fifo_check_swap,
 };
-<<<<<<< HEAD
-=======
 
 
 
@@ -193,33 +185,25 @@ _clock_swap_out_victim(struct mm_struct *mm, struct Page ** ptr_page, int in_tic
      assert(head != NULL);
      assert(in_tick==0);
 
-     list_entry_t * le = head;
-     int i; // 循环三次 寻找合适的置换页
-    for (i = 0; i < 2; i++) {
-        /* 第一次循环 寻找 没被访问过的 且 没被修改过的 同时将被访问过的页的 访问位 清 0
-            第二次循环 依然是寻找 没被访问过的 且 没被修改过的 因为到了此次循环 访问位都被清 0 了 不存在被访问过的
-            只需要找没被修改过的即可 同时将被修改过的页 修改位 清 0
-            第三次循环 还是找 没被访问过 且 没被修改过的 此时 第一次循环 已经将所有访问位 清 0 了
-             第二次循环 也已经将所有修改位清 0 了 故 在第三次循环 一定有 没被访问过 也没被修改过的 页
-        */
-        while (le != head) {
-            struct Page *page = le2page(le, pra_page_link);            
-            pte_t *ptep = get_pte(mm->pgdir, page->pra_vaddr, 0);
-
-            if (!(*ptep & PTE_A) && !(*ptep & PTE_D)) { // 没被访问过 也没被修改过 
-                list_del(le);
-                *ptr_page = page;
-                return 0;
-            }
-            if (i == 0) {
-                *ptep &= 0xFFFFFFDF;
-            } else if (i == 1) {
-                *ptep &= 0xFFFFFFBF;
-            }
-            le = le->prev;
-        }
-        le = le->prev;
-    }
+     list_entry_t *p = head;
+     while (1) {
+         p = list_next(p);
+         if (p == head) {
+             p = list_next(p);
+         }
+         struct Page *ptr = le2page(p, pra_page_link);
+         pte_t *pte = get_pte(mm -> pgdir, ptr -> pra_vaddr, 0);
+         //获取页表项
+         if ((*pte & PTE_D) == 1) {// 如果dirty bit为1，改为0
+             *pte &= ~PTE_D;
+         } 
+         else 
+         {// 如果dirty bit为0，则标记为换出页
+             *ptr_page = ptr;
+             list_del(p);
+             break;
+         }
+     }
      return 0;
 }
 
@@ -300,4 +284,3 @@ struct swap_manager swap_manager_clock =
 };
 
 
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235

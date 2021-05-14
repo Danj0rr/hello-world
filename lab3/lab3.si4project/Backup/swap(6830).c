@@ -32,11 +32,7 @@ swap_init(void)
 {
      swapfs_init();
 
-<<<<<<< HEAD
      if (!(1024 <= max_swap_offset && max_swap_offset < MAX_SWAP_OFFSET_LIMIT))
-=======
-     if (!(1024 <= max_swap_offset && max_swap_offset < MAX_SWAP_OFFSET_LIMIT)) //至少1024页
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
      {
           panic("bad max_swap_offset %08x.\n", max_swap_offset);
      }
@@ -104,20 +100,13 @@ swap_out(struct mm_struct *mm, int n, int in_tick)
           pte_t *ptep = get_pte(mm->pgdir, v, 0);
           assert((*ptep & PTE_P) != 0);
 
-<<<<<<< HEAD
           if (swapfs_write( (page->pra_vaddr/PGSIZE+1)<<8, page) != 0) {
                     cprintf("SWAP: failed to save\n");
                     sm->map_swappable(mm, v, page, 0);
-=======
-          if (swapfs_write( (page->pra_vaddr/PGSIZE+1)<<8, page) != 0) {//加一的原因在于swap0号扇区为了区别00映射从而空出
-                    cprintf("SWAP: failed to save\n");
-                    sm->map_swappable(mm, v, page, 0); //交换回磁盘失败，重新插入mm管理
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
                     continue;
           }
           else {
                     cprintf("swap_out: i %d, store page in vaddr 0x%x to disk swap entry %d\n", i, v, page->pra_vaddr/PGSIZE+1);
-<<<<<<< HEAD
                     *ptep = (page->pra_vaddr/PGSIZE+1)<<8;
                     free_page(page);
           }
@@ -125,15 +114,6 @@ swap_out(struct mm_struct *mm, int n, int in_tick)
           tlb_invalidate(mm->pgdir, v);
      }
      return i;
-=======
-                    *ptep = (page->pra_vaddr/PGSIZE+1)<<8; //设置switch_entry
-                    free_page(page); //释放物理页
-          }
-          
-          tlb_invalidate(mm->pgdir, v); //刷新TLB
-     }
-     return i; //反回写回物理页数量
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
 }
 
 int
@@ -155,11 +135,7 @@ swap_in(struct mm_struct *mm, uintptr_t addr, struct Page **ptr_result)
      return 0;
 }
 
-<<<<<<< HEAD
 
-=======
- 
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
 
 static inline void
 check_content_set(void)

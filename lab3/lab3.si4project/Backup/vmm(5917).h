@@ -11,13 +11,8 @@ struct mm_struct;
 
 // the virtual continuous memory area(vma), [vm_start, vm_end), 
 // addr belong to a vma means  vma.vm_start<= addr <vma.vm_end 
-<<<<<<< HEAD
-struct vma_struct {//只有一段[start, end]，以一段区域为单位管理虚拟内存
-    struct mm_struct *vm_mm; // the set of vma using the same PDT 
-=======
 struct vma_struct {
     struct mm_struct *vm_mm; // the set of vma using the same PDT 指向管理自身的mm
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
     uintptr_t vm_start;      // start addr of vma      
     uintptr_t vm_end;        // end addr of vma, not include the vm_end itself
     uint32_t vm_flags;       // flags of vma
@@ -31,24 +26,13 @@ struct vma_struct {
 #define VM_WRITE                0x00000002
 #define VM_EXEC                 0x00000004
 
-<<<<<<< HEAD
-// the control struct for [[a set of vma]] using the same PDT，主要功能是下面的四个结构，没有指向vma_struct的指针
-struct mm_struct {//以PDT为单位管理，每个mm_struct管理所有的，同一页目录下的vma_struct，和vma_struct是两个不同的管理结构
-    list_entry_t mmap_list;        // linear list link which sorted by start addr of vma，连接的是vma_stuct
-    struct vma_struct *mmap_cache; // current accessed vma, used for speed purpose
-                                   //功能类似cache，指向一片虚拟地址（该页目录对应地址下）中实际使用到的部分（有映射的部分）
-    pde_t *pgdir;                  // the PDT of these vma
-    int map_count;                 // the count of these vma，说明有多个vma_struct
-    void *sm_priv;                 // the private data for swap manager
-=======
 // the control struct for a set of vma using the same PDT
 struct mm_struct {
     list_entry_t mmap_list;        // linear list link which sorted by start addr of vma //与vmas进行链接
     struct vma_struct *mmap_cache; // current accessed vma, used for speed purpose//访问cache
     pde_t *pgdir;                  // the PDT of these vma
     int map_count;                 // the count of these vma
-    void *sm_priv;                   // the private data for swap manager  指向 pra_list_head
->>>>>>> f5feecaf1bb2b59e9266ec8b9c4648a7cd0de235
+    void *sm_priv;                   // the private data for swap manager
 };
 
 struct vma_struct *find_vma(struct mm_struct *mm, uintptr_t addr);
